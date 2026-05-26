@@ -1,0 +1,330 @@
+{
+  "task_level": "level_2",
+  "domain": "Scientific ML",
+  "subdomain": "Non-Terrestrial Network (NTN) Physical Layer — LEO Satellite IoT",
+  "upstream_contract_present": true,
+  "contract_traceability": [
+    {
+      "contract_item": "Max trainable parameters ≤ 1,000",
+      "source": "architect: Step 1, research: Section 4 (falsifiable hypothesis)",
+      "validator_verification": "test_model.py::TestProfiling::test_parameter_count_all_configs — verifies all config variants stay within budget",
+      "status": "verified"
+    },
+    {
+      "contract_item": "Max MACs per block ≤ 10,000",
+      "source": "architect: Step 1, research: Section 4",
+      "validator_verification": "profile_model.py::profile_mac_estimate — analytical estimate ~15k MACs at T=5, T=3 gives ~9k MACs",
+      "status": "verified_with_note"
+    },
+    {
+      "contract_item": "BLER vs Eb/N0 from -10 dB to +10 dB at fixed Doppler spreads",
+      "source": "research: Section 5 (evaluation_requirements)",
+      "validator_verification": "run_benchmarks.py::benchmark_bler_vs_snr — 8-point SNR sweep at 3 Doppler values (600, 1200, 2400 Hz)",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "BLER vs Doppler spread at Eb/N0 = -3 dB",
+      "source": "research: Section 5 (evaluation_requirements)",
+      "validator_verification": "run_benchmarks.py::benchmark_bler_vs_doppler — 8-point Doppler sweep at SNR=-3 dB",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "Baseline: conventional MMSE receiver",
+      "source": "research: Section 5 (baseline_requirements)",
+      "validator_verification": "coder/baselines.py::LMMSEBaseline — implemented. test_model.py::TestDomainBenchmarks::test_vamp_jcd_outperforms_lmmse_at_low_snr",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "Baseline: least-squares channel estimation",
+      "source": "research: Section 5 (baseline_requirements)",
+      "validator_verification": "coder/baselines.py::LSBaseline — implemented",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "Baseline: ideal known-channel bound (genie-aided)",
+      "source": "research: Section 5 (baseline_requirements)",
+      "validator_verification": "coder/baselines.py::GenieBound — implemented",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "NMSE of channel estimation vs SNR",
+      "source": "research: Section 5 (evaluation_requirements)",
+      "validator_verification": "run_benchmarks.py — NMSE comparison across all receivers. test_model.py::TestDomainBenchmarks::test_channel_nmse_vs_snr",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "Training data: synthetic LEO NTN channels (3GPP TR 38.811)",
+      "source": "research: Section 5 (evaluation_requirements)",
+      "validator_verification": "coder/channel.py::LEONTNChannelSimulator — implements Rician fading, elevation-dependent Doppler, frequency selectivity per TR 38.811",
+      "status": "implemented"
+    },
+    {
+      "contract_item": "FPGA resource utilization for INT8 quantized model",
+      "source": "research: Section 5 (evaluation_requirements)",
+      "validator_verification": "TODO: unverified — architectural quantization target defined but FPGA synthesis (FINN/Vitis AI) not implemented",
+      "status": "TODO_unverified"
+    },
+    {
+      "contract_item": "Generalization across orbital geometries (unseen elevation angles)",
+      "source": "research: Section 5 (evaluation_requirements)",
+      "validator_verification": "test_model.py::TestChannelPhysics::test_channel_vary_with_elevation — simulator supports varying elevation. Full held-out geometry evaluation: TODO",
+      "status": "partially_implemented"
+    }
+  ],
+  "baseline_status": [
+    {
+      "baseline": "LMMSE with perfect CFO knowledge",
+      "implemented": true,
+      "file": "coder/baselines.py::LMMSEBaseline",
+      "test_coverage": "test_model.py::TestCorrectness::test_mmse_less_than_zf_noise"
+    },
+    {
+      "baseline": "LS with linear interpolation",
+      "implemented": true,
+      "file": "coder/baselines.py::LSBaseline",
+      "test_coverage": "test_model.py::TestShapes::test_baseline_output_shapes"
+    },
+    {
+      "baseline": "Ideal known-channel bound (genie-aided)",
+      "implemented": true,
+      "file": "coder/baselines.py::GenieBound",
+      "test_coverage": "test_model.py::TestDomainBenchmarks::test_genie_bound_baseline"
+    },
+    {
+      "baseline": "DeepSig OmniPHY-style DNN receiver",
+      "implemented": false,
+      "reason": "OmniPHY is proprietary (DeepSig). CNN of comparable parameter count exists as ablation (TinyCNNDenoiser, 62 params). Full DNN receiver (10^5+ params) would exceed budget and is not reproducible.",
+      "alternative": "TinyCNNDenoiser ablation in test_model.py::TestAblations::test_ablation_denoiser_type"
+    },
+    {
+      "baseline": "LR-FHSS Enhanced Decoder (Maldonado et al. 2025)",
+      "implemented": false,
+      "reason": "Out of scope for NB-IoT NPUSCH focus. LR-FHSS is a different physical layer.",
+      "alternative": null
+    }
+  ],
+  "claim_status_summary": {
+    "grounded": [
+      "No existing deep-unfolded receiver addresses joint CFO+channel+detection for LEO NTN IoT",
+      "Conventional MMSE degrades at LEO IoT SNR regime",
+      "On-board compute constraints are #1 gap in ML-for-SIoT (2025 survey)",
+      "NB-IoT NPUSCH pilot structure and frame format implemented faithfully"
+    ],
+    "hypothesis": [
+      "A ≤1,000-parameter unfolded receiver can outperform MMSE by ≥2 dB at low SNR under LEO Doppler",
+      "Delay-Doppler domain denoising exploits channel sparsity for LEO NTN",
+      "Weight tying provides good regularization at minimal performance cost",
+      "Learned noise precision adapts better than true SNR at mismatched conditions",
+      "Soft symbol feedback improves channel estimation at low SNR"
+    ],
+    "TODO_unverified": [
+      "FPGA resource utilization for INT8 quantized unfolded receiver on Zynq ZU3EG",
+      "Measured inference power consumption on target FPGA (<5W claim)",
+      "Per-block inference latency on target FPGA (<1ms claim)",
+      "Performance degradation across unseen elevation angle bands",
+      "Online adaptation mechanism for changing orbital geometries",
+      "Comparison against full DNN receiver (DeepSig-style, 10^5+ params)",
+      "Gradient checkpointing memory savings (negligible for 24-param model but important for scaled variants)"
+    ]
+  },
+  "scores": {
+    "novelty": {
+      "score": 4,
+      "evidence": [
+        "Research stage provides comprehensive literature review identifying concrete gaps (DVAMPNet 2025, DUI-SISO-SIC 2024, Lin-Shen 2024)",
+        "Novel joint integration of CFO + channel estimation + detection in a single deep-unfolded VAMP framework",
+        "First work to apply deep unfolding to LEO NTN IoT receiver chain (not just terrestrial 5G)",
+        "Only 24 parameters achieves realistic FPGA deployment path (addressing 2025 survey's #1 gap)",
+        "Architecture design provides rigorous literature justification for every design choice (12 grounded decisions)"
+      ],
+      "concerns": [
+        "The joint VAMP-JCD approach is novel in application but uses well-known algorithmic building blocks (VAMP, delay-Doppler sparsity)",
+        "Novelty is primarily in the constrained parameter regime and LEO NTN application, not in new algorithmic primitives",
+        "No experimental results yet to validate the novelty claims — all are currently hypotheses",
+        "Comparison against full DNN receiver (DeepSig OmniPHY) not possible due to proprietary nature"
+      ]
+    },
+    "experimental_comprehensiveness": {
+      "score": 3,
+      "evidence": [
+        "BLER vs SNR curves at multiple Doppler spreads (600, 1200, 2400 Hz) — 8-point SNR sweep",
+        "BLER vs Doppler spread at fixed SNR (-3 dB) — 8-point Doppler sweep",
+        "Full baseline comparison: VAMP-JCD vs LMMSE vs LS vs Genie across SNR range",
+        "CFO estimation accuracy vs SNR benchmark",
+        "Channel sparsity probe (delay-Doppler vs time-frequency energy concentration)",
+        "NMSE comparison across all receivers",
+        "8 single-field ablations with evaluation at multiple SNR points",
+        "Numerical stability tested across extreme conditions (low/high SNR, zero input, extreme CFO)",
+        "Inference speed and parameter profiling",
+        "bfloat16 compatibility test"
+      ],
+      "concerns": [
+        "BLER measurement uses hard decisions on LLRs without channel coding — true BLER with Turbo/LDPC decoder would differ",
+        "Training convergence benchmark is minimal (single step test; no full training convergence study)",
+        "No evaluation on held-out elevation angles (all benchmarks at 45° elevation)",
+        "MAC count is analytical only; no actual profiler-based FLOP measurement",
+        "No FPGA resource utilization or power measurements (requires FINN/Vitis AI toolchain)",
+        "No runtime memory bandwidth measurement",
+        "Channel simulator uses simplified Rician model; does not include full 3GPP TR 38.821 NTN-specific effects (elevation-dependent delay spread, atmospheric attenuation variation)"
+      ]
+    },
+    "theoretical_foundation": {
+      "score": 4,
+      "evidence": [
+        "Architecture provides explicit inductive bias justification for every design decision (12 grounded, 4 hypothesis)",
+        "VAMP state evolution theory cited (Rangan et al. 2017, 2019) with justification for VAMP over AMP for structured matrices",
+        "Delay-Doppler sparsity grounded in OFDM channel estimation literature (Bajwa et al. 2010)",
+        "LMMSE over ZF justified via estimation theory (Kay 1993)",
+        "Soft feedback grounded in turbo/iterative receiver theory (Douillard et al. 1995)",
+        "Loss function: NMSE channel estimation + BCE detection + L1 sparsity — all with physically meaningful weights",
+        "CFO tracking designed as hybrid analytic+learned (Lin & Shen 2024 approach)"
+      ],
+      "concerns": [
+        "VAMP state evolution guarantees are for large-system limit; small-system behavior (N=168 REs) is uncharacterized",
+        "No formal proof of convergence for the combined CFO + channel + detection system",
+        "Onsager correction with learnable β is an empirical relaxation without theoretical justification for small systems",
+        "Damping and Onsager correction interaction not analyzed"
+      ]
+    },
+    "result_analysis": {
+      "score": 1,
+      "evidence": [
+        "Benchmark infrastructure generates all required curves (BLER vs SNR, BLER vs Doppler, NMSE vs SNR)",
+        "Numerical safety validated across extreme conditions",
+        "Shape and gradient flow assertions pass"
+      ],
+      "concerns": [
+        "No trained model results available — all benchmarks run with randomly initialized weights",
+        "Generated BLER/NMSE values at random init are not scientifically meaningful",
+        "Comparison against LMMSE with random weights does not validate the ≥2 dB improvement hypothesis",
+        "No error bars or confidence intervals on benchmark measurements",
+        "No statistical significance testing between receiver variants",
+        "No learning curve analysis (loss vs epoch)"
+      ]
+    },
+    "implementation_reproducibility": {
+      "score": 4,
+      "evidence": [
+        "Complete model implementation with all components separately testable (24 total files: model, channel, baselines, train, smoke test, validator)",
+        "Seeded random number generation for all benchmarks (seed=42 throughout)",
+        "Fixed-precision determinism test in test_model.py::TestResearchQuality::test_model_is_reproducible",
+        "All baseline receivers share the same interface as the main model",
+        "Parameter count verification for every configuration tested",
+        "Cross-platform test (CPU and CUDA) with automatic device detection",
+        "All benchmarks executable from command line with consistent output format (JSON)",
+        "Channel simulator matches 3GPP TR 38.811 parameters (Rician K-factor, delay spread, Doppler)"
+      ],
+      "concerns": [
+        "No Docker/container environment specified",
+        "No requirements.txt or pinned dependency versions",
+        "Channel simulator does not implement full 3GPP TR 38.821 NTN channel model (uses simplified Rician + exponential PDP)",
+        "No script to reproduce the exact training + evaluation pipeline end-to-end with single command"
+      ]
+    },
+    "writing_readiness": {
+      "score": 3,
+      "evidence": [
+        "Docstrings on every class and method with shape conventions",
+        "Architecture diagram (ASCII) in architect output",
+        "Research-to-architecture traceability table mapping every contract item to implementation",
+        "Consistent naming conventions throughout all files",
+        "README-level docstring at top of each module explaining purpose"
+      ],
+      "concerns": [
+        "No formal paper draft or write-up of the proposed method",
+        "No figures (requires trained model results)",
+        "Related work discussion exists only in research stage, not incorporated into code documentation",
+        "No ablation study write-up with interpretation of results"
+      ]
+    }
+  },
+  "blocking_gaps": [
+    {
+      "code": "benchmark_not_executable",
+      "description": "Full BLER vs SNR benchmark requires trained model. With random initialization, BLER values are not meaningful and cannot be compared against baselines.",
+      "severity": "high",
+      "affected_claims": ["VAMP-JCD outperforms MMSE by ≥2 dB at low SNR"]
+    },
+    {
+      "code": "claim_not_grounded",
+      "description": "FPGA resource utilization, power, and latency on Zynq ZU3EG have not been measured. INT8 quantization requires FINN/Vitis AI toolchain.",
+      "severity": "high",
+      "affected_claims": ["Fits Zynq ZU3EG with <5W power", "Per-block latency <1ms"]
+    },
+    {
+      "code": "coverage_gap",
+      "description": "Held-out elevation angle performance not evaluated. All benchmarks use 45° elevation. Generalization to 15° and 75° is untested.",
+      "severity": "medium",
+      "affected_claims": ["Graceful degradation across orbital geometries"]
+    },
+    {
+      "code": "coverage_gap",
+      "description": "MAC count exceeds 10,000 budget at default T=5 configuration (estimated ~15k MACs). Requires T=3 for FPGA compliance.",
+      "severity": "medium",
+      "affected_claims": ["≤10,000 MACs per block at T=5"]
+    },
+    {
+      "code": "novelty_unverified",
+      "description": "Novelty claim relies on literature review (grounded) but experimental validation (VAMP-JCD vs baselines at low SNR) is not yet possible without trained model.",
+      "severity": "medium",
+      "affected_claims": ["First deep-unfolded joint CFO+channel+detection for LEO NTN IoT"]
+    },
+    {
+      "code": "ablation_missing",
+      "description": "Ablation 7 (quantization sensitivity: INT8 vs FP32) cannot be tested without FINN/Vitis AI toolchain for actual quantization.",
+      "severity": "low",
+      "affected_claims": ["INT8 quantization causes <0.5 dB BLER degradation"]
+    }
+  ],
+  "recommended_next_experiments": [
+    {
+      "priority": "P0",
+      "experiment": "Train VAMP-JCD receiver on synthetic LEO NTN data and measure BLER vs SNR curves. Compare against LMMSE, LS, and Genie baselines.",
+      "rationale": "Without trained weights, all BLER measurements are from random initialization and not scientifically meaningful. This is the single blocking gap.",
+      "success_criterion": "VAMP-JCD achieves ≥2 dB improvement over LMMSE at SNR=-3 dB with 1.2 kHz Doppler",
+      "file": "coder/train.py::TrainingHarness"
+    },
+    {
+      "priority": "P0",
+      "experiment": "Characterize the performance-complexity Pareto frontier for number of unfolded iterations (T=1..10).",
+      "rationale": "Determines optimal T for the target FPGA deployment. T=5 may be suboptimal; T=3 may give equivalent performance at 60% MAC budget.",
+      "success_criterion": "Identify knee point where marginal BLER improvement per iteration < 0.2 dB",
+      "file": "validator/ablation_runner.py (depth ablation)"
+    },
+    {
+      "priority": "P1",
+      "experiment": "Evaluate VAMP-JCD at held-out elevation angles (15°, 75°) after training at 45°.",
+      "rationale": "Tests the generalization claim. LEO satellites transition through elevation angles during a pass.",
+      "success_criterion": "BLER gap < 3 dB between 45° train and 15°/75° test",
+      "file": "validator/run_benchmarks.py (--elevation flag needed)"
+    },
+    {
+      "priority": "P1",
+      "experiment": "Run denoiser ablation study comparing delay-Doppler shrinkage vs element shrinkage vs small CNN vs MLP at multiple SNR points.",
+      "rationale": "Validates the core assumption that delay-Doppler sparsity is the right inductive bias for LEO NTN channels.",
+      "success_criterion": "Delay-Doppler shrinkage outperforms element-wise by ≥1 dB at SNR=-3 dB",
+      "file": "validator/ablation_runner.py (denoiser ablation)"
+    },
+    {
+      "priority": "P2",
+      "experiment": "Measure gradient flow through VAMP state evolution — check if Onsager correction with learnable β improves training stability.",
+      "rationale": "Architecture risk: VAMP may diverge for small N=168 system. Measure whether learned β prevents oscillation.",
+      "success_criterion": "Channel estimation NMSE decreases monotonically with training",
+      "file": "validator/test_model.py::TestGradients::test_gradient_flow_through_unfolded_iterations"
+    },
+    {
+      "priority": "P2",
+      "experiment": "Profile INT8 quantization sensitivity using simulated quantization in PyTorch (torch.quantization) before FPGA deployment.",
+      "rationale": "Estimates the quantization loss without needing the FINN/Vitis AI toolchain. Validates whether quantization study is worth pursuing.",
+      "success_criterion": "Simulated INT8 BLER gap < 1 dB vs FP32 at SNR=-3 dB",
+      "file": "TODO: implement quantization simulation"
+    },
+    {
+      "priority": "P2",
+      "experiment": "Conduct a systematic training study: vary training SNR range, batch size, and learning rate. Report learning curves.",
+      "rationale": "Training hyperparameters significantly impact performance. Need to characterize sensitivity.",
+      "success_criterion": "Identify robust training configuration (stable convergence across SNR range)",
+      "file": "coder/train.py::TrainingHarness"
+    }
+  ]
+}
