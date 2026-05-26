@@ -1,0 +1,49 @@
+{
+  "verdict": "needs_revision",
+  "iteration": 3,
+  "summary": "The draft is much better aligned with the reference-architecture contract and clearly labels most results as synthetic infrastructure verification. However, it still contains a few claim-grounding problems: one persistent overreach in cross-method comparison framing, one unsupported quantitative deployment/performance hypothesis stated too concretely, and one methodological claim about VAMP guarantees that is stronger than the cited grounding supports.",
+  "issues": [
+    {
+      "id": "i_03",
+      "severity": "major",
+      "category": "research_eval",
+      "location": "Section 6.2 'Comparison with Prior Designs on Structural Grounds', sentences 1-3",
+      "problem": "This section still leans too far toward substantive cross-method comparison by juxtaposing VAMP-JCD with DVAMPNet and OmniPHY using concrete parameter counts and task scope, even though validator/research_eval says only literature-level context is supported and that no reproducible full-DNN comparison exists. The section is improved relative to iteration 2, but it still reads more strongly than the available coverage warrants.",
+      "suggested_fix": "Narrow the section further to explicit literature context only: say that prior works occupy different points in the published design space and that the paper reports only a parameter-budget contrast from cited sources, not an implemented or empirically comparable baseline analysis.",
+      "persisted_from_previous": true
+    },
+    {
+      "id": "i_10",
+      "severity": "minor",
+      "category": "claims",
+      "location": "Section 4.1, paragraph 'MAC budget trade-off', sentence ending 'with an expected BLER penalty of < 1 dB (hypothesis, requiring trained-model verification)'; Section 7, item 2, clause 'where marginal BLER improvement per iteration drops below 0.2 dB'",
+      "problem": "The draft now improves many deployment-number statements, but it still states specific unverified performance deltas for depth trade-offs as if they were well-motivated quantitative expectations. The validator artifacts support that this is a hypothesis requiring training, not a grounded numeric bound.",
+      "suggested_fix": "Replace the specific '< 1 dB' and '0.2 dB' thresholds with qualitative wording unless an upstream artifact explicitly justifies those numbers. For example, say that T=3 may trade off some performance for lower MAC count and that future work should identify the performance-complexity knee empirically after training.",
+      "persisted_from_previous": true
+    },
+    {
+      "id": "i_11",
+      "severity": "major",
+      "category": "factual",
+      "location": "Related Work, Section 2.1, sentence 'VAMP's advantage over AMP lies in its convergence guarantee for a broader class of matrices, which is essential for the NB-IoT NPUSCH pilot structure.'",
+      "problem": "This sentence overstates the theoretical grounding. The artifacts support choosing VAMP over AMP for structured/non-i.i.d. matrices, but they also explicitly note that rigorous guarantees are in the large-system regime and do not establish that such guarantees are 'essential' or directly applicable to the small NB-IoT system studied here. As written, the paper presents a stronger theoretical justification than the grounding supports.",
+      "suggested_fix": "Soften the claim to say that VAMP is better motivated than AMP for structured measurement operators and is therefore a reasonable design choice for the NPUSCH pilot structure, while acknowledging that the small-system setting used here falls outside the regime of rigorous state-evolution guarantees.",
+      "persisted_from_previous": false
+    }
+  ],
+  "scope_check": {
+    "overstates_empirical_results": false,
+    "claims_sota_without_numbers": false,
+    "relabels_synthetic_as_real": false,
+    "demands_trained_model_results": false,
+    "ignores_research_eval_gaps": false,
+    "states_unverified_claim_as_fact": true,
+    "claims_baseline_superiority_without_coverage": false
+  },
+  "stats": {
+    "blockers": 0,
+    "majors": 2,
+    "minors": 1,
+    "nits": 0
+  }
+}

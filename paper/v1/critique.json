@@ -1,0 +1,94 @@
+{
+  "verdict": "needs_revision",
+  "iteration": 1,
+  "summary": "The draft is generally well scoped to a reference architecture and validation harness, and it repeatedly discloses the absence of trained-model results. However, it contains unsupported availability/release claims and several factual/citation issues where statements are stronger than what the upstream artifacts verify.",
+  "issues": [
+    {
+      "id": "i_01",
+      "severity": "blocker",
+      "category": "claims",
+      "location": "Abstract, final sentence; Section 1, contribution bullet 3; Conclusion, paragraph 2; Appendix Checklist items 2 and 5",
+      "problem": "The paper states that the architecture/code/validation suite 'are released as open source' and that the code 'is publicly available', but the provided artifacts only show local files and documentation. No repository URL, archive, or release artifact is cited, so public release is not verified by the artifact set.",
+      "suggested_fix": "Either provide a concrete public repository/archive URL and cite it, or weaken all such statements to 'we provide/provide in the artifact bundle' or 'we prepared a reference implementation'. The checklist answers should match the actual availability status.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_02",
+      "severity": "major",
+      "category": "citations",
+      "location": "Introduction, second paragraph, sentence ending with citation to vaswani2017attention",
+      "problem": "The statement that pilot-aided interpolation fails under rapidly time-varying channels is cited to Vaswani et al. (2017), which is unrelated to channel estimation or satellite communications. This is a clear citation mismatch.",
+      "suggested_fix": "Remove the Vaswani citation from this communications claim and replace it with a relevant channel-estimation / OFDM / NTN source already grounded in the artifacts, or rewrite the sentence so it is supported only by appropriate references such as the 3GPP NTN material and domain-specific receiver literature.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_03",
+      "severity": "major",
+      "category": "research_eval",
+      "location": "Section 4.3 'Domain benchmarks'; Section 5.4 'Baseline Comparison (Random Initialization)'; Table 4 caption and surrounding text",
+      "problem": "The paper says the harness includes 'baseline comparison against LMMSE, LS, and Genie-aided receivers' and presents Table 4 as a baseline comparison, but validator/research_eval marks the central comparison as not scientifically meaningful without training. In particular, the genie baseline also shows BLER = 1.0 everywhere, which conflicts with the benchmark documentation stating genie performance is an ideal known-channel upper bound and should not be presented as a meaningful performance comparison under random initialization.",
+      "suggested_fix": "Reframe this section explicitly as an interface/infrastructure sanity check rather than a baseline comparison, and explain why random-init VAMP-JCD and analytic baselines are not performance-comparable here. If keeping the genie row, justify precisely what pipeline component is randomized and why perfect-channel detection still yields BLER 1.0; otherwise remove the row from the paper until the measurement is interpretable.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_04",
+      "severity": "major",
+      "category": "factual",
+      "location": "Section 2.3 'On-Board ML Inference for Space', sentence ending 'latency requirements (<1 ms per slot)'",
+      "problem": "The paper states '<1 ms per slot' as if it were a grounded system requirement, but the upstream artifacts treat sub-millisecond latency as a design target / SWaP constraint rather than a verified requirement or measured property. This wording overstates an unverified deployment assumption.",
+      "suggested_fix": "Rewrite the sentence to make the latency number explicitly a target design constraint (e.g., 'targeting sub-millisecond per-block latency') rather than an established requirement or fact, unless a specific standard or deployment source is cited.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_05",
+      "severity": "major",
+      "category": "citations",
+      "location": "References entry 'dui2024' and corresponding mentions in Sections 1 and 2",
+      "problem": "The citation is attributed to 'AAU Group' rather than identifiable authors, which is not an acceptable scholarly attribution and makes the source hard to verify.",
+      "suggested_fix": "Replace 'AAU Group' with the actual author names from the cited work, or if the exact bibliographic metadata is unavailable, cite the work in a verifiable form consistent with the source record used in the research artifacts.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_06",
+      "severity": "minor",
+      "category": "research_eval",
+      "location": "Section 3.4 'Parameter Budget and Complexity'; Section 6.1 'Design-Space Insights'",
+      "problem": "The manuscript does disclose that the default T=5 configuration exceeds the 10,000-MAC target, which is good, but it still foregrounds T=5 as the main architecture without clearly distinguishing it from the deployment-feasible T=3 variant identified in validator/research_eval as the budget-compliant option.",
+      "suggested_fix": "State more explicitly, where the default configuration is introduced, that T=5 is the validation default while T=3 is the currently budget-compliant deployment candidate under the analytical MAC estimate.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_07",
+      "severity": "minor",
+      "category": "factual",
+      "location": "Introduction, first paragraph, sentence claiming '50--70 dB extra path loss compared with terrestrial links'",
+      "problem": "This quantitative path-loss comparison is presented without a supporting citation, and the precise 50--70 dB range is not grounded in the reviewed artifacts.",
+      "suggested_fix": "Add a supporting citation for the path-loss range or soften the claim to a qualitative statement about substantially higher path loss in LEO NTN links.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_08",
+      "severity": "minor",
+      "category": "structure",
+      "location": "Appendix 'NeurIPS Paper Checklist', item 6 'Broader impacts'",
+      "problem": "The checklist answer says 'Minimal' but provides only a very brief note. Given the paper itself mentions disaster response and satellite connectivity and the checklist flags dual-use considerations, the broader-impact discussion is too thin to be useful.",
+      "suggested_fix": "Expand the broader-impact note by briefly stating at least one plausible benefit and one risk/dual-use concern, while keeping the discussion proportional to the paper's scope as a reference architecture.",
+      "persisted_from_previous": false
+    }
+  ],
+  "scope_check": {
+    "overstates_empirical_results": false,
+    "claims_sota_without_numbers": false,
+    "relabels_synthetic_as_real": false,
+    "demands_trained_model_results": false,
+    "ignores_research_eval_gaps": false,
+    "states_unverified_claim_as_fact": true,
+    "claims_baseline_superiority_without_coverage": false
+  },
+  "stats": {
+    "blockers": 1,
+    "majors": 4,
+    "minors": 3,
+    "nits": 0
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "verdict": "needs_revision",
+  "iteration": 2,
+  "summary": "The revision substantially improves scope discipline and resolves most iteration-1 issues, especially around availability claims, citation mismatches, and baseline framing. However, the draft still states several quantitative results and deployment-oriented assertions more strongly than the validator-grounded artifacts support, and one key comparison claim remains misaligned with research_eval coverage.",
+  "issues": [
+    {
+      "id": "i_03",
+      "severity": "major",
+      "category": "research_eval",
+      "location": "Section 4 'Validation Setup', paragraph 'Domain benchmarks'; Section 5.4 title and surrounding text; Section 6.2, sentence comparing against prior designs",
+      "problem": "The paper now correctly reframes Table 4 as infrastructure validation and omits the genie row, which resolves the main iteration-1 concern. However, it still states that the reference implementation/harness includes 'baseline receivers (LMMSE, LS, Genie-aided bound)' and later compares parameter counts against DVAMPNet/OmniPHY as if the implemented baseline coverage were sufficient for substantive cross-method comparison. Validator/research_eval explicitly says the central comparison is not scientifically meaningful without trained weights and that the DeepSig-style DNN comparison is not implemented/reproducible.",
+      "suggested_fix": "Keep the infrastructure framing, but narrow any comparison language to what is actually covered: implemented analytic baselines for interface/sanity checks only, and literature-level parameter-count context for prior neural receivers. Avoid wording that implies empirical cross-method comparison or comprehensive baseline coverage before trained runs exist.",
+      "persisted_from_previous": true
+    },
+    {
+      "id": "i_09",
+      "severity": "major",
+      "category": "research_eval",
+      "location": "Section 5.2 'Structural and Numerical Validation', bullet 'Gradient flow'; Section 3.4 'Design Space and Ablations', item (7); Conclusion, paragraph 1",
+      "problem": "The paper reports concrete validation results for gradient flow through a composite loss, eight ablations, and the full harness, but the upstream artifacts do not fully support all of these as reported. In particular, research_eval marks quantization sensitivity as not implemented, and the scorecard describes some benchmark components as infrastructure that exist but are not all meaningfully executable beyond random initialization. Presenting the harness as fully covering all eight ablations and the stated training-style gradient objective overstates current verification status.",
+      "suggested_fix": "Differentiate implemented-and-executed checks from planned-but-not-yet-executable ones. Explicitly say that seven ablations are currently executable and quantization sensitivity remains unverified/TODO, and phrase the gradient-flow check as a smoke/feasibility test rather than a validated training result unless the exact reported composite-loss test is directly grounded in validator outputs.",
+      "persisted_from_previous": false
+    },
+    {
+      "id": "i_10",
+      "severity": "minor",
+      "category": "claims",
+      "location": "Abstract, sentence 1; Introduction, first paragraph; Related Work, Section 2.2 and 2.3; Limitations, item on FPGA implementation",
+      "problem": "Several numeric operating-point and deployment statements are presented as fixed facts without clear grounding in the artifacts or a cited source: e.g., 'Eb/N0 <= 0 dB characteristic of the NB-IoT NTN link budget', 'Doppler spreads >= 1 kHz characteristic', and specific Zynq ZU3EG targets such as '<600 DSP slices' alongside power/latency targets. The artifacts treat many of these as design constraints or evaluation settings rather than externally validated system requirements.",
+      "suggested_fix": "Qualify these numbers as target operating regimes/design constraints used in this work unless a specific standard or cited source establishes them as requirements. For example, use 'targeting', 'we study', or 'we evaluate under' for SNR/Doppler/deployment figures that come from the pipeline contract rather than measured deployment evidence.",
+      "persisted_from_previous": false
+    }
+  ],
+  "scope_check": {
+    "overstates_empirical_results": false,
+    "claims_sota_without_numbers": false,
+    "relabels_synthetic_as_real": false,
+    "demands_trained_model_results": false,
+    "ignores_research_eval_gaps": true,
+    "states_unverified_claim_as_fact": true,
+    "claims_baseline_superiority_without_coverage": false
+  },
+  "stats": {
+    "blockers": 0,
+    "majors": 2,
+    "minors": 1,
+    "nits": 0
+  }
+}
